@@ -301,6 +301,8 @@ RUN rm /plugins/rabbitmq_prometheus*.ez
 COPY plugins/rabbitmq_prometheus*.ez  /plugins/
 RUN rm /plugins/ra-*.ez
 COPY plugins/ra-*.ez  /plugins/
+RUN rm -f /plugins/inet_tcp_deflate_dist*.ez
+COPY plugins/inet_tcp_deflate_dist-*.ez  /plugins/
 
 ARG RABBITMQ_PROMETHEUS_VERSION
 RUN chmod --recursive --verbose a+r /plugins/*.ez && \

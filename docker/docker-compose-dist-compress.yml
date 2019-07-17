@@ -1,0 +1,79 @@
+# 512k msgs + deflate
+# Overview: http://localhost:3000/dashboard/snapshot/lnxXW06ss45FiWLip8ZjPB4bmsIpLYnN
+# Distribution: http://localhost:3000/dashboard/snapshot/FgMAjlhPMmQSSwdrXuZy344Fo9rVdM6S
+#
+# 512k msgs
+# Overview: http://localhost:3000/dashboard/snapshot/ZYUgyCs1XDBBAf65E3Y2mwfzdoHf7RmV
+# Distribution: http://localhost:3000/dashboard/snapshot/121rON8Mp6pN1JB1PNzCDKsMUmpu230a
+#
+# https://docs.docker.com/compose/compose-file/
+version: "3.6"
+
+# https://docs.docker.com/compose/compose-file/#networks
+networks:
+  rabbitmq-prometheus:
+
+# https://docs.docker.com/compose/compose-file/#volumes
+volumes:
+  rabbitmq-prometheus_prometheus:
+  rabbitmq-prometheus_grafana:
+
+services:
+  rmq0-dist-compress: &rabbitmq
+    # https://hub.docker.com/r/pivotalrabbitmq/rabbitmq-prometheus/tags
+    image: pivotalrabbitmq/rabbitmq-prometheus:3.8.0-alpha.734-2019.07.17
+    networks:
+      - "rabbitmq-prometheus"
+    ports:
+      - "5682:5672"
+      - "15682:15672"
+      - "15702:15692"
+    # https://unix.stackexchange.com/questions/71940/killing-tcp-connection-in-linux
+    # https://en.wikipedia.org/wiki/Tcpkill
+    # https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands#block-an-ip-address
+    cap_add:
+      - ALL
+    hostname: rmq0-dist-compress
+    environment:
+      RABBITMQ_ERLANG_COOKIE: rmq0-dist-compress
+    volumes:
+      - ./rabbitmq-dist-compress.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq-env-compress.conf:/etc/rabbitmq/rabbitmq-env.conf:ro
+      - ./rabbitmq-dist-compress-definitions.json:/etc/rabbitmq/rabbitmq-definitions.json:ro
+    # we want to simulate hitting thresholds
+    ulimits:
+      nofile:
+        soft: "2000"
+        hard: "2000"
+  rmq1-dist-compress:
+    << : *rabbitmq
+    hostname: rmq1-dist-compress
+    ports:
+      - "5683:5672"
+      - "15683:15672"
+      - "15703:15692"
+  rmq2-dist-compress:
+    << : *rabbitmq
+    hostname: rmq2-dist-compress
+    ports:
+      - "5684:5672"
+      - "15684:15672"
+      - "15704:15692"
+  stress_dist:
+    # https://hub.docker.com/r/pivotalrabbitmq/perf-test/tags
+    image: &perf-test-image pivotalrabbitmq/perf-test:dev-2019.06.10
+    networks:
+      - "rabbitmq-prometheus"
+    environment:
+      URI: "amqp://guest:guest@rmq0-dist-compress:5672/%2f"
+      QUEUE_PATTERN: "ha3-stress_dist-%d"
+      QUEUE_PATTERN_FROM: 1
+      QUEUE_PATTERN_TO: 10
+      PRODUCERS: 10
+      CONSUMERS: 10
+      ROUTING_KEY: max1
+      SIZE: 512000
+      QOS: 100
+      AUTOACK: "false"
+      VARIABLE_RATE: "1:30,20:30,40:30"
+      SERVERS_STARTUP_TIMEOUT: &startup_timeout 30

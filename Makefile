@@ -8,7 +8,7 @@ RABBITMQ_VERSION ?= $(DOCKER_IMAGE_VERSION)
 
 PROJECT := rabbitmq_prometheus
 PROJECT_MOD := rabbit_prometheus_app
-DEPS = rabbit rabbitmq_management_agent prometheus rabbitmq_web_dispatch
+DEPS = rabbit rabbitmq_management_agent prometheus rabbitmq_web_dispatch inet_tcp_deflate_dist
 # Deps that are not applications
 # rabbitmq_management is added so that we build a custom version, for the Docker image
 BUILD_DEPS = accept amqp_client rabbit_common rabbitmq_management
@@ -30,6 +30,8 @@ BUILD_DEPS = accept amqp_client rabbit_common
 RABBITMQ_CONFIG_FILE = $(CURDIR)/rabbitmq-disable-metrics-collector.conf
 export RABBITMQ_CONFIG_FILE
 endif
+
+dep_inet_tcp_deflate_dist = git https://github.com/essen/inet_tcp_deflate_dist master
 
 include rabbitmq-components.mk
 include erlang.mk
@@ -77,7 +79,7 @@ dir: docker_image_run
 .PHONY: docker_image_version_bump
 docker_image_version_bump:
 	@sed -i '' 's|$(DOCKER_IMAGE_NAME):.*|$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)|g' \
-	  docker/docker-compose-{overview,dist-tls,qq}.yml
+	  docker/docker-compose-{overview,dist-tls,dist-compress,qq}.yml
 .PHONY: divb
 divb: docker_image_version_bump
 
@@ -133,8 +135,8 @@ define DOCKER_COMPOSE_UP
 cd docker && \
 docker-compose --file docker-compose-$(@F).yml up --detach
 endef
-.PHONY: metrics overview dist-tls qq
-metrics overview dist-tls qq:
+.PHONY: metrics overview dist-tls dist-compress qq
+metrics overview dist-tls dist-compress qq:
 	@$(DOCKER_COMPOSE_UP)
 
 .PHONY: up
