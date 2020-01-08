@@ -9,6 +9,8 @@ RABBITMQ_VERSION ?= $(DOCKER_IMAGE_VERSION)
 PROJECT := rabbitmq_prometheus
 PROJECT_MOD := rabbit_prometheus_app
 DEPS = rabbit rabbitmq_management_agent prometheus rabbitmq_web_dispatch
+dep_prometheus = git https://github.com/essen/prometheus.erl msacc-collector
+
 # Deps that are not applications
 # rabbitmq_management is added so that we build a custom version, for the Docker image
 BUILD_DEPS = accept amqp_client rabbit_common rabbitmq_management
