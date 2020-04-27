@@ -40,12 +40,14 @@ groups() ->
         {aggregated_metrics, [], [
             aggregated_metrics_test,
             build_info_test,
-            identity_info_test
+            identity_info_test,
+            specific_erlang_metrics_present_test
         ]},
         {per_object_metrics, [], [
             per_object_metrics_test,
             build_info_test,
-            identity_info_test
+            identity_info_test,
+            specific_erlang_metrics_present_test
         ]}
     ].
 
@@ -255,6 +257,10 @@ identity_info_test(Config) ->
     ?assertEqual(match, re:run(Body, "^rabbitmq_identity_info{", [{capture, none}, multiline])),
     ?assertEqual(match, re:run(Body, "rabbitmq_node=", [{capture, none}])),
     ?assertEqual(match, re:run(Body, "rabbitmq_cluster=", [{capture, none}])).
+
+specific_erlang_metrics_present_test(Config) ->
+    {_Headers, Body} = http_get_with_pal(Config, [], 200),
+    ?assertEqual(match, re:run(Body, "^erlang_vm_dist_node_queue_size_bytes{", [{capture, none}, multiline])).
 
 http_get(Config, ReqHeaders, CodeExp) ->
     Path = proplists:get_value(prometheus_path, Config, "/metrics"),
