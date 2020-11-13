@@ -1,4 +1,4 @@
-## This repository has been migrated to https://github.com/rabbitmq/rabbitmq-server
+## This was migrated to https://github.com/rabbitmq/rabbitmq-server
 
 All issues have been transferred, archiving.
 
