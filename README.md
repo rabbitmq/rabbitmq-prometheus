@@ -1,3 +1,7 @@
+## This repository has been migrated to https://github.com/rabbitmq/rabbitmq-server
+
+All issues have been transferred, archiving.
+
 [![Build](https://img.shields.io/github/workflow/status/rabbitmq/rabbitmq-prometheus/Test)](https://github.com/rabbitmq/rabbitmq-prometheus/actions?query=workflow%3ATest)
 [![Grafana Dashboards](https://img.shields.io/badge/Grafana-6%20dashboards-blue)](https://grafana.com/orgs/rabbitmq)
 
